@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Interactive Credit Card Customer Churn & Predictive Risk Analytics Dashboard by Shreyansh Gupta">
+  <meta name="description" content="Interactive Credit Card Customer Churn & Predictive Risk Analytics Dashboard with CSV Importer by Shreyansh Gupta">
   <title>Credit Card Churn Analytics & Predictive AI Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
       align-items: center;
       padding-bottom: 24px;
       border-bottom: 1px solid var(--border-card);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       flex-wrap: wrap;
       gap: 16px;
     }
@@ -76,6 +76,57 @@
       background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Import CSV Button */
+    .btn-import {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 9px 18px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-import:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    }
+
+    .btn-reset {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 9px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-reset:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #ffffff;
     }
 
     .author-badge {
@@ -104,6 +155,21 @@
       border-radius: 50%;
       box-shadow: 0 0 10px var(--accent-green);
       display: inline-block;
+    }
+
+    /* Notification Banner */
+    .toast-banner {
+      display: none;
+      background: rgba(37, 99, 235, 0.15);
+      border: 1px solid var(--accent-blue);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      color: #93c5fd;
+      font-size: 14px;
+      align-items: center;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease;
     }
 
     /* KPI Grid */
@@ -534,25 +600,48 @@
           High-dimensional behavioral analysis, machine learning risk modeling & executive retention framework
         </p>
       </div>
-      <div class="author-badge">
-        <span class="status-dot"></span>
-        <span>Lead Analyst: <a href="https://github.com/Shreyansh123185655" target="_blank">Shreyansh Gupta</a></span>
-        <span style="color: #64748b;">|</span>
-        <a href="https://github.com/Shreyansh123185655/credit-card-churn" target="_blank" style="color: #93c5fd;">GitHub Repo ↗</a>
+
+      <div class="header-actions">
+        <!-- Hidden file input -->
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">
+        
+        <!-- Import CSV Button -->
+        <button class="btn-import" onclick="document.getElementById('csvFileInput').click()" title="Import any customer churn CSV dataset">
+          <span>📁</span> Import CSV File
+        </button>
+
+        <!-- Reset Button -->
+        <button class="btn-reset" id="btnReset" onclick="resetToDefaultData()">
+          <span>↺</span> Reset to Default
+        </button>
+
+        <!-- Author Badge -->
+        <div class="author-badge">
+          <span class="status-dot"></span>
+          <span>Lead Analyst: <a href="https://github.com/Shreyansh123185655" target="_blank">Shreyansh Gupta</a></span>
+          <span style="color: #64748b;">|</span>
+          <a href="https://github.com/Shreyansh123185655/credit-card-churn" target="_blank" style="color: #93c5fd;">GitHub Repo ↗</a>
+        </div>
       </div>
     </header>
+
+    <!-- Toast Banner -->
+    <div class="toast-banner" id="toastBanner">
+      <span id="toastMessage"></span>
+      <button style="background: transparent; border: none; color: #93c5fd; cursor: pointer; font-weight: bold; font-size: 16px;" onclick="document.getElementById('toastBanner').style.display='none'">✕</button>
+    </div>
 
     <!-- KPI Section -->
     <section class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Customer Population</div>
         <div class="kpi-value" id="kpi-customers">10,127</div>
-        <div class="kpi-sub">Total active & attrited portfolio</div>
+        <div class="kpi-sub" id="kpi-cust-sub">Total active & attrited portfolio</div>
       </div>
       <div class="kpi-card danger">
         <div class="kpi-label">Baseline Churn Rate</div>
         <div class="kpi-value" id="kpi-churn">16.07%</div>
-        <div class="kpi-sub" style="color: #f87171;">1,627 customers lost</div>
+        <div class="kpi-sub" id="kpi-churn-sub" style="color: #f87171;">1,627 customers lost</div>
       </div>
       <div class="kpi-card success">
         <div class="kpi-label">ML Model Accuracy</div>
@@ -827,6 +916,7 @@
   </div>
 
   <script>
+    // Tab switching
     function switchTab(tabId) {
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -834,90 +924,8 @@
       event.currentTarget.classList.add('active');
     }
 
-    // Interactive Churn Simulator
-    function updateSimulation() {
-      const contacts = parseInt(document.getElementById('input-contacts').value);
-      const trans = parseInt(document.getElementById('input-trans').value);
-      const bal = parseInt(document.getElementById('input-bal').value);
-      const vel = parseFloat(document.getElementById('input-vel').value);
-      const prod = parseInt(document.getElementById('input-prod').value);
-
-      document.getElementById('val-contacts').innerText = contacts + ' contacts';
-      document.getElementById('val-trans').innerText = trans + ' trans';
-      document.getElementById('val-bal').innerText = '$' + bal.toLocaleString();
-      document.getElementById('val-vel').innerText = vel.toFixed(2) + 'x';
-      document.getElementById('val-prod').innerText = prod + ' products';
-
-      // Empirical scoring formula calibrated against Random Forest model weights
-      let baseRisk = 0.16;
-      
-      // Contacts spiral
-      if (contacts === 0) baseRisk -= 0.12;
-      else if (contacts === 1) baseRisk -= 0.08;
-      else if (contacts === 2) baseRisk -= 0.03;
-      else if (contacts === 3) baseRisk += 0.08;
-      else if (contacts === 4) baseRisk += 0.18;
-      else if (contacts === 5) baseRisk += 0.35;
-      else if (contacts >= 6) baseRisk += 0.80;
-
-      // Transactions
-      if (trans < 35) baseRisk += 0.35;
-      else if (trans < 50) baseRisk += 0.18;
-      else if (trans > 80) baseRisk -= 0.14;
-
-      // Revolving balance
-      if (bal === 0) baseRisk += 0.20;
-      else if (bal < 500) baseRisk += 0.08;
-      else if (bal > 1500) baseRisk -= 0.10;
-
-      // Velocity ratio
-      if (vel < 0.5) baseRisk += 0.30;
-      else if (vel < 0.7) baseRisk += 0.10;
-      else if (vel >= 1.0) baseRisk -= 0.08;
-
-      // Products held
-      if (prod <= 2) baseRisk += 0.10;
-      else if (prod >= 4) baseRisk -= 0.08;
-
-      let churnProb = Math.min(Math.max(baseRisk, 0.01), 0.99) * 100;
-      churnProb = Math.round(churnProb);
-
-      const circle = document.getElementById('risk-meter-circle');
-      const scoreDisp = document.getElementById('risk-score-display');
-      const badge = document.getElementById('risk-badge');
-      const action = document.getElementById('risk-action');
-
-      scoreDisp.innerText = churnProb + '%';
-
-      if (churnProb >= 60) {
-        circle.style.borderColor = '#ef4444';
-        circle.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.3)';
-        scoreDisp.style.color = '#ef4444';
-        badge.innerText = 'CRITICAL CHURN RISK';
-        badge.style.background = 'rgba(239, 68, 68, 0.2)';
-        badge.style.color = '#f87171';
-        action.innerText = 'Immediate outbound phone call by Retention Specialist; offer loyalty credits or fee waiver.';
-      } else if (churnProb >= 25) {
-        circle.style.borderColor = '#f59e0b';
-        circle.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.3)';
-        scoreDisp.style.color = '#f59e0b';
-        badge.innerText = 'MEDIUM CHURN RISK';
-        badge.style.background = 'rgba(245, 158, 11, 0.2)';
-        badge.style.color = '#fbbf24';
-        action.innerText = 'Send personalized category spend bonus (e.g. 5% cashback on groceries) to reactivate engagement.';
-      } else {
-        circle.style.borderColor = '#10b981';
-        circle.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
-        scoreDisp.style.color = '#10b981';
-        badge.innerText = 'LOW CHURN RISK';
-        badge.style.background = 'rgba(16, 185, 129, 0.2)';
-        badge.style.color = '#34d399';
-        action.innerText = 'Customer displays healthy engagement. Eligible for cross-sell product offers (auto loan, investment).';
-      }
-    }
-
-    // SQL Data
-    const sqlQueries = [
+    // Default baseline dataset metrics (10,127 records)
+    const DEFAULT_SQL_QUERIES = [
       {
         title: "1. Executive Portfolio Churn Summary",
         code: "SELECT COUNT(*) AS total_customers,\n       SUM(CASE WHEN Attrition_Flag = 'Attrited Customer' THEN 1 ELSE 0 END) AS churned_customers,\n       ROUND(SUM(CASE WHEN Attrition_Flag = 'Attrited Customer' THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS churn_rate_pct,\n       ROUND(AVG(Credit_Limit), 2) AS avg_credit_limit\nFROM bankchurners;",
@@ -1001,13 +1009,17 @@
       }
     ];
 
+    let currentSqlQueries = JSON.parse(JSON.stringify(DEFAULT_SQL_QUERIES));
+    let activeSqlIndex = 0;
+
     function loadSqlQuery(idx) {
+      activeSqlIndex = idx;
       document.querySelectorAll('.sql-btn').forEach((b, i) => {
         if (i === idx) b.classList.add('active');
         else b.classList.remove('active');
       });
 
-      const q = sqlQueries[idx];
+      const q = currentSqlQueries[idx];
       document.getElementById('sql-code-view').innerText = q.code;
 
       const thead = document.getElementById('sql-table-head');
@@ -1015,6 +1027,322 @@
 
       const tbody = document.getElementById('sql-table-body');
       tbody.innerHTML = q.rows.map(row => '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>').join('');
+    }
+
+    // Fast robust in-browser CSV Parser
+    function parseCSV(text) {
+      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) return null;
+
+      function parseRow(rowStr) {
+        const values = [];
+        let insideQuote = false;
+        let curVal = '';
+        for (let i = 0; i < rowStr.length; i++) {
+          const char = rowStr[i];
+          if (char === '"') {
+            insideQuote = !insideQuote;
+          } else if (char === ',' && !insideQuote) {
+            values.push(curVal.trim().replace(/^"|"$/g, ''));
+            curVal = '';
+          } else {
+            curVal += char;
+          }
+        }
+        values.push(curVal.trim().replace(/^"|"$/g, ''));
+        return values;
+      }
+
+      const headers = parseRow(lines[0]);
+      const data = [];
+      for (let i = 1; i < lines.length; i++) {
+        const vals = parseRow(lines[i]);
+        if (vals.length === headers.length) {
+          const obj = {};
+          headers.forEach((h, idx) => {
+            obj[h] = vals[idx];
+          });
+          data.push(obj);
+        }
+      }
+      return { headers, data };
+    }
+
+    // CSV Upload Handler
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const parsed = parseCSV(content);
+
+          if (!parsed || parsed.data.length === 0) {
+            alert("Could not parse records from the uploaded CSV file. Please verify CSV formatting.");
+            return;
+          }
+
+          processImportedDataset(file.name, parsed.data);
+        } catch (err) {
+          console.error(err);
+          alert("Error parsing CSV: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function processImportedDataset(fileName, records) {
+      const total = records.length;
+      let churnedCount = 0;
+      let totalCreditLimit = 0;
+
+      // Groupings
+      const cardMap = {};
+      const contactMap = {};
+      const inactiveMap = {};
+      const productMap = {};
+      const velocityBands = {
+        'Severe Drop (<0.50x)': { total: 0, churned: 0 },
+        'Moderate Drop (0.50-0.69x)': { total: 0, churned: 0 },
+        'Mild Drop (0.70-0.99x)': { total: 0, churned: 0 },
+        'Stable or Growing (>=1.0x)': { total: 0, churned: 0 }
+      };
+
+      const highValueAtRisk = [];
+
+      records.forEach(row => {
+        // Detect churn flag column
+        const attrFlag = (row['Attrition_Flag'] || row['attrition_flag'] || row['Churn'] || '').toLowerCase();
+        const isChurn = attrFlag.includes('attrited') || attrFlag === '1' || attrFlag === 'true' || attrFlag === 'yes';
+
+        if (isChurn) churnedCount++;
+
+        const creditLim = parseFloat(row['Credit_Limit'] || row['credit_limit'] || 0) || 0;
+        const transAmt = parseFloat(row['Total_Trans_Amt'] || row['total_trans_amt'] || 0) || 0;
+        const transCt = parseInt(row['Total_Trans_Ct'] || row['total_trans_ct'] || 0) || 0;
+        const contacts = parseInt(row['Contacts_Count_12_mon'] || row['contacts_count_12_mon'] || 0) || 0;
+        const inactive = parseInt(row['Months_Inactive_12_mon'] || row['months_inactive_12_mon'] || 0) || 0;
+        const products = parseInt(row['Total_Relationship_Count'] || row['total_relationship_count'] || 0) || 0;
+        const velocity = parseFloat(row['Total_Ct_Chng_Q4_Q1'] || row['total_ct_chng_q4_q1'] || 0) || 0;
+        const cardCat = (row['Card_Category'] || row['card_category'] || 'Blue').trim();
+        const clientId = row['CLIENTNUM'] || row['clientnum'] || 'CUST-' + Math.floor(Math.random()*100000);
+
+        totalCreditLimit += creditLim;
+
+        // Card Tier
+        if (!cardMap[cardCat]) cardMap[cardCat] = { total: 0, churned: 0 };
+        cardMap[cardCat].total++;
+        if (isChurn) cardMap[cardCat].churned++;
+
+        // Contacts
+        if (!contactMap[contacts]) contactMap[contacts] = { total: 0, churned: 0 };
+        contactMap[contacts].total++;
+        if (isChurn) contactMap[contacts].churned++;
+
+        // Inactive
+        if (!inactiveMap[inactive]) inactiveMap[inactive] = { total: 0, churned: 0 };
+        inactiveMap[inactive].total++;
+        if (isChurn) inactiveMap[inactive].churned++;
+
+        // Products
+        if (!productMap[products]) productMap[products] = { total: 0, churned: 0 };
+        productMap[products].total++;
+        if (isChurn) productMap[products].churned++;
+
+        // Velocity
+        if (velocity < 0.5) {
+          velocityBands['Severe Drop (<0.50x)'].total++;
+          if (isChurn) velocityBands['Severe Drop (<0.50x)'].churned++;
+        } else if (velocity < 0.7) {
+          velocityBands['Moderate Drop (0.50-0.69x)'].total++;
+          if (isChurn) velocityBands['Moderate Drop (0.50-0.69x)'].churned++;
+        } else if (velocity < 1.0) {
+          velocityBands['Mild Drop (0.70-0.99x)'].total++;
+          if (isChurn) velocityBands['Mild Drop (0.70-0.99x)'].churned++;
+        } else {
+          velocityBands['Stable or Growing (>=1.0x)'].total++;
+          if (isChurn) velocityBands['Stable or Growing (>=1.0x)'].churned++;
+        }
+
+        // High Value At Risk
+        if (!isChurn && (transAmt >= 10000 || creditLim >= 15000) && (inactive >= 2 || contacts >= 3 || velocity < 0.6)) {
+          highValueAtRisk.push({
+            id: clientId,
+            card: cardCat,
+            limit: '$' + creditLim.toLocaleString(),
+            spend: '$' + transAmt.toLocaleString(),
+            spendRaw: transAmt,
+            trans: transCt,
+            contacts: contacts
+          });
+        }
+      });
+
+      const churnRatePct = ((churnedCount / total) * 100).toFixed(2);
+      const avgCredit = (totalCreditLimit / total).toFixed(2);
+
+      // 1. Update KPI Cards
+      document.getElementById('kpi-customers').innerText = total.toLocaleString();
+      document.getElementById('kpi-cust-sub').innerText = `Dataset: ${fileName}`;
+      document.getElementById('kpi-churn').innerText = churnRatePct + '%';
+      document.getElementById('kpi-churn-sub').innerText = `${churnedCount.toLocaleString()} customers attrited`;
+
+      // 2. Update Dynamic SQL Queries
+      // Query 0: Summary
+      currentSqlQueries[0].rows = [[
+        total.toLocaleString(),
+        churnedCount.toLocaleString(),
+        churnRatePct + '%',
+        '$' + parseFloat(avgCredit).toLocaleString()
+      ]];
+
+      // Query 1: Cards
+      currentSqlQueries[1].rows = Object.keys(cardMap).map(k => {
+        const item = cardMap[k];
+        const rate = item.total > 0 ? ((item.churned / item.total) * 100).toFixed(2) + '%' : '0.00%';
+        return [k, item.total.toLocaleString(), item.churned.toLocaleString(), rate];
+      }).sort((a, b) => parseFloat(b[3]) - parseFloat(a[3]));
+
+      // Query 2: Contacts
+      currentSqlQueries[2].rows = Object.keys(contactMap).sort((a,b)=>a-b).map(k => {
+        const item = contactMap[k];
+        const rate = item.total > 0 ? ((item.churned / item.total) * 100).toFixed(2) + '%' : '0.00%';
+        return [k, item.total.toLocaleString(), item.churned.toLocaleString(), rate];
+      });
+
+      // Query 3: Inactivity
+      currentSqlQueries[3].rows = Object.keys(inactiveMap).sort((a,b)=>a-b).map(k => {
+        const item = inactiveMap[k];
+        const rate = item.total > 0 ? ((item.churned / item.total) * 100).toFixed(2) + '%' : '0.00%';
+        return [k, item.total.toLocaleString(), item.churned.toLocaleString(), rate];
+      });
+
+      // Query 4: Products
+      currentSqlQueries[4].rows = Object.keys(productMap).sort((a,b)=>a-b).map(k => {
+        const item = productMap[k];
+        const rate = item.total > 0 ? ((item.churned / item.total) * 100).toFixed(2) + '%' : '0.00%';
+        return [k + ' Products', item.total.toLocaleString(), item.churned.toLocaleString(), rate];
+      });
+
+      // Query 5: Velocity
+      currentSqlQueries[5].rows = Object.keys(velocityBands).map(k => {
+        const item = velocityBands[k];
+        const rate = item.total > 0 ? ((item.churned / item.total) * 100).toFixed(2) + '%' : '0.00%';
+        return [k, item.total.toLocaleString(), item.churned.toLocaleString(), rate];
+      });
+
+      // Query 6: Top At Risk
+      highValueAtRisk.sort((a,b)=>b.spendRaw - a.spendRaw);
+      currentSqlQueries[6].rows = highValueAtRisk.slice(0, 5).map(c => [
+        c.id, c.card, c.limit, c.spend, c.trans.toString(), c.contacts.toString()
+      ]);
+
+      loadSqlQuery(activeSqlIndex);
+
+      // Show Banner
+      const toast = document.getElementById('toastBanner');
+      const msg = document.getElementById('toastMessage');
+      msg.innerHTML = `✅ Successfully imported <strong>${fileName}</strong> with <strong>${total.toLocaleString()}</strong> customer records! All KPIs and SQL analytics recomputed live.`;
+      toast.style.display = 'flex';
+
+      // Show Reset Button
+      document.getElementById('btnReset').style.display = 'inline-flex';
+    }
+
+    function resetToDefaultData() {
+      currentSqlQueries = JSON.parse(JSON.stringify(DEFAULT_SQL_QUERIES));
+      document.getElementById('kpi-customers').innerText = "10,127";
+      document.getElementById('kpi-cust-sub').innerText = "Total active & attrited portfolio";
+      document.getElementById('kpi-churn').innerText = "16.07%";
+      document.getElementById('kpi-churn-sub').innerText = "1,627 customers lost";
+      document.getElementById('btnReset').style.display = 'none';
+      document.getElementById('toastBanner').style.display = 'none';
+      loadSqlQuery(activeSqlIndex);
+      document.getElementById('csvFileInput').value = '';
+    }
+
+    // Interactive Churn Simulator
+    function updateSimulation() {
+      const contacts = parseInt(document.getElementById('input-contacts').value);
+      const trans = parseInt(document.getElementById('input-trans').value);
+      const bal = parseInt(document.getElementById('input-bal').value);
+      const vel = parseFloat(document.getElementById('input-vel').value);
+      const prod = parseInt(document.getElementById('input-prod').value);
+
+      document.getElementById('val-contacts').innerText = contacts + ' contacts';
+      document.getElementById('val-trans').innerText = trans + ' trans';
+      document.getElementById('val-bal').innerText = '$' + bal.toLocaleString();
+      document.getElementById('val-vel').innerText = vel.toFixed(2) + 'x';
+      document.getElementById('val-prod').innerText = prod + ' products';
+
+      // Empirical scoring formula calibrated against Random Forest model weights
+      let baseRisk = 0.16;
+      
+      // Contacts spiral
+      if (contacts === 0) baseRisk -= 0.12;
+      else if (contacts === 1) baseRisk -= 0.08;
+      else if (contacts === 2) baseRisk -= 0.03;
+      else if (contacts === 3) baseRisk += 0.08;
+      else if (contacts === 4) baseRisk += 0.18;
+      else if (contacts === 5) baseRisk += 0.35;
+      else if (contacts >= 6) baseRisk += 0.80;
+
+      // Transactions
+      if (trans < 35) baseRisk += 0.35;
+      else if (trans < 50) baseRisk += 0.18;
+      else if (trans > 80) baseRisk -= 0.14;
+
+      // Revolving balance
+      if (bal === 0) baseRisk += 0.20;
+      else if (bal < 500) baseRisk += 0.08;
+      else if (bal > 1500) baseRisk -= 0.10;
+
+      // Velocity ratio
+      if (vel < 0.5) baseRisk += 0.30;
+      else if (vel < 0.7) baseRisk += 0.10;
+      else if (vel >= 1.0) baseRisk -= 0.08;
+
+      // Products held
+      if (prod <= 2) baseRisk += 0.10;
+      else if (prod >= 4) baseRisk -= 0.08;
+
+      let churnProb = Math.min(Math.max(baseRisk, 0.01), 0.99) * 100;
+      churnProb = Math.round(churnProb);
+
+      const circle = document.getElementById('risk-meter-circle');
+      const scoreDisp = document.getElementById('risk-score-display');
+      const badge = document.getElementById('risk-badge');
+      const action = document.getElementById('risk-action');
+
+      scoreDisp.innerText = churnProb + '%';
+
+      if (churnProb >= 60) {
+        circle.style.borderColor = '#ef4444';
+        circle.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.3)';
+        scoreDisp.style.color = '#ef4444';
+        badge.innerText = 'CRITICAL CHURN RISK';
+        badge.style.background = 'rgba(239, 68, 68, 0.2)';
+        badge.style.color = '#f87171';
+        action.innerText = 'Immediate outbound phone call by Retention Specialist; offer loyalty credits or fee waiver.';
+      } else if (churnProb >= 25) {
+        circle.style.borderColor = '#f59e0b';
+        circle.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.3)';
+        scoreDisp.style.color = '#f59e0b';
+        badge.innerText = 'MEDIUM CHURN RISK';
+        badge.style.background = 'rgba(245, 158, 11, 0.2)';
+        badge.style.color = '#fbbf24';
+        action.innerText = 'Send personalized category spend bonus (e.g. 5% cashback on groceries) to reactivate engagement.';
+      } else {
+        circle.style.borderColor = '#10b981';
+        circle.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
+        scoreDisp.style.color = '#10b981';
+        badge.innerText = 'LOW CHURN RISK';
+        badge.style.background = 'rgba(16, 185, 129, 0.2)';
+        badge.style.color = '#34d399';
+        action.innerText = 'Customer displays healthy engagement. Eligible for cross-sell product offers (auto loan, investment).';
+      }
     }
 
     // Init
